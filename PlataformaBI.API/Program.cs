@@ -1,0 +1,91 @@
+using DataAccess;
+using DomainDependencyInjection;
+using Lamar.Microsoft.DependencyInjection;
+using Lamar;
+using Microsoft.OpenApi.Models;
+using PlataformaBI.API.Services;
+using System.Collections.Concurrent;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseLamar((context, registry) =>
+{
+    registry.AddDbContext<GsoftDbContext>();
+
+    registry.Include(DomainServiceRegister.GetRegister());
+
+    registry.For<ConcurrentDictionary<string, Session>>().Use<ConcurrentDictionary<string, Session>>().Singleton();
+
+    registry.AddEndpointsApiExplorer();
+    registry.AddSwaggerGen(opt =>
+    {
+
+        opt.AddSecurityDefinition("token", new OpenApiSecurityScheme()
+        {
+            Reference = new OpenApiReference()
+            {
+                Id = "token",
+                Type = ReferenceType.SecurityScheme,
+            },
+            Description = "Token provided by API",
+            Name = "gsoft-wd-token",
+            In = ParameterLocation.Header,
+            Type = SecuritySchemeType.ApiKey,
+        });
+
+        var openApiSecurityRequirement = new OpenApiSecurityRequirement();
+        openApiSecurityRequirement.Add(
+            new OpenApiSecurityScheme()
+            {
+                Reference = new OpenApiReference()
+                {
+                    Id = "token",
+                    Type = ReferenceType.SecurityScheme,
+                },
+            },
+            new List<string>());
+
+        opt.AddSecurityRequirement(openApiSecurityRequirement);
+
+        opt.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
+        opt.IgnoreObsoleteActions();
+        opt.IgnoreObsoleteProperties();
+        opt.CustomSchemaIds(type => type.FullName);
+    });
+});
+
+// Add services to the container.
+
+//builder.Services.AddDbContext<GsoftDbContext>();
+builder.Services.AddControllers();
+
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+//builder.Services.AddEndpointsApiExplorer();
+//builder.Services.AddSwaggerGen();
+
+//Cors
+builder.Services.AddCors(c =>
+{
+    c.AddPolicy("AllowOrigin", options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+});
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+
+app.UseRouting();
+
+app.UseCors();
+
+//app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();
