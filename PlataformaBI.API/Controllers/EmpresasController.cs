@@ -50,11 +50,10 @@ namespace PlataformaBI.API.Controllers
         [HttpGet("{CNPJ}")]
         public IActionResult Get(string CNPJ)
         {
-            Empresas empresas = _context
-                        .empresas
-                        .FirstOrDefault(p =>
-                            p.CNPJ.Equals(Format.GetCNPJ(CNPJ))
-                         );
+            if (!this.UserAuthenticated)
+                return Unauthorized();
+
+            Empresas empresas = _context.empresas.FirstOrDefault(p => p.CNPJ.Equals(Format.GetCNPJ(CNPJ)));
 
             if (empresas == null)
             {
@@ -127,11 +126,9 @@ namespace PlataformaBI.API.Controllers
                 sessionExists.UpdateLastRequest();
             }
 
-            HttpContext.Response.Headers.Add("gsoft-wd-token", sessionExists.Token);
+            //HttpContext.Response.Headers.Add("gsoft-wd-token", sessionExists.Token);
 
-            usuarioLogado.Senha = "";
-
-            return Ok(usuarioLogado);
+            return Ok(sessionExists.Token);
         }
 
 
