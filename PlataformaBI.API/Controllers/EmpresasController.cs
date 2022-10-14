@@ -104,13 +104,13 @@ namespace PlataformaBI.API.Controllers
 */
 
         [HttpPost("Login")]
-        public async Task<IActionResult> Login(string email, string senha)
+        public async Task<IActionResult> Login([FromBody]UsuariosLogin user)
         {
-            if (email == null || senha == null)
+            if (user.Email== null || user.Senha == null)
                 return BadRequest();
 
             //senha = CriptoSenha.MD5Senha(senha);
-            Usuarios usuarioLogado = await _context.usuarios.FirstOrDefaultAsync(p => p.Email.Equals(email) && p.Senha.Equals(senha));
+            Usuarios usuarioLogado = await _context.usuarios.FirstOrDefaultAsync(p => p.Email.Equals(user.Email) && p.Senha.Equals(user.Senha));
             
             if (usuarioLogado == null)
                 return BadRequest();
