@@ -10,7 +10,7 @@ namespace PlataformaBI.API.Services
     public class Session : IDisposable
     {
         private const byte MinutesToCheckSession = 1;
-        private const byte MinutesToDie = 255;
+        private const byte MinutesToDie = 255; //30
         private const ushort ConstMinuteToMilliSeconds = 60000;
 
         private readonly Usuarios user;

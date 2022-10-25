@@ -16,13 +16,11 @@ namespace PlataformaBI.API.Controllers
     public class EmpresasController : GsoftController
     {
         private readonly GsoftDbContext _context;
-        private readonly ConcurrentDictionary<string, Session> sessions;
 
         public EmpresasController(GsoftDbContext context, ConcurrentDictionary<string, Session> sessions)
             : base(sessions)
         {
            _context = context;
-           this.sessions = sessions;
         }
 
         /// <summary>
@@ -31,7 +29,7 @@ namespace PlataformaBI.API.Controllers
         [HttpGet]
         public IActionResult Get()
         {
-            if (!this.UserAuthenticated)
+            if (!UserAuthenticated)
                 return Unauthorized();
 
             IEnumerable<Empresas> empresas = _context.empresas.ToArray();
@@ -50,7 +48,7 @@ namespace PlataformaBI.API.Controllers
         [HttpGet("{CNPJ}")]
         public IActionResult Get(string CNPJ)
         {
-            if (!this.UserAuthenticated)
+            if (!UserAuthenticated)
                 return Unauthorized();
 
             Empresas empresas = _context.empresas.FirstOrDefault(p => p.CNPJ.Equals(Format.GetCNPJ(CNPJ)));
@@ -62,75 +60,5 @@ namespace PlataformaBI.API.Controllers
 
             return Ok(empresas);
         }
-/*
-        [HttpGet("Email/{CNPJ}")]
-        public IActionResult EnviarEmail(string CNPJ)
-        {
-            Empresas empresas = _context.empresas.FirstOrDefault(p => p.CNPJ.Equals(GetCNPJ(CNPJ)));
-
-
-            if (empresas == null)
-            {
-                return NoContent();
-            }
-            empresas.Senha = CriptoSenha.MD5Senha(empresas.CNPJ);
-            Email email = _context.email.FirstOrDefault(p => p.ativo);
-
-            EnvioEmail envioEmail = new EnvioEmail(email);
-            var a = envioEmail.enviarEmail(empresas);
-            return Ok(empresas);
-        }
-
-        [HttpPost]
-        public IActionResult Login(string cnpj, string senha)
-        {
-            Empresas empresas = _context.empresas.FirstOrDefault(p => p.CNPJ == GetCNPJ(cnpj));
-            if (empresas == null || senha == null)
-            {
-                return NoContent();
-            }
-
-            var Senha = CriptoSenha.MD5Senha(empresas.CNPJ);
-            if (empresas.Senha.Equals(senha.ToUpper()))
-            {
-                return Ok(empresas);
-            }
-            else
-            {
-                return NoContent();
-            }
-
-        }
-*/
-
-        [HttpPost("Login")]
-        public async Task<IActionResult> Login([FromBody]UsuariosLogin user)
-        {
-            if (user.Email== null || user.Senha == null)
-                return BadRequest();
-
-            //senha = CriptoSenha.MD5Senha(senha);
-            Usuarios usuarioLogado = await _context.usuarios.FirstOrDefaultAsync(p => p.Email.Equals(user.Email) && p.Senha.Equals(user.Senha));
-            
-            if (usuarioLogado == null)
-                return BadRequest();
-
-            var sessionExists = this.sessions.Values.FirstOrDefault(x => x.usuarioLogado.ID == usuarioLogado.ID);
-
-            if (sessionExists is null)
-            {
-                sessionExists = new Session(this.sessions, usuarioLogado);
-            }
-            else
-            {
-                sessionExists.UpdateLastRequest();
-            }
-
-            //HttpContext.Response.Headers.Add("gsoft-wd-token", sessionExists.Token);
-
-            return Ok(sessionExists.Token);
-        }
-
-
     }
 }
