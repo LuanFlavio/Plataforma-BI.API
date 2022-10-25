@@ -5,6 +5,7 @@ using Lamar;
 using Microsoft.OpenApi.Models;
 using PlataformaBI.API.Services;
 using System.Collections.Concurrent;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,6 +52,10 @@ builder.Host.UseLamar((context, registry) =>
         opt.IgnoreObsoleteActions();
         opt.IgnoreObsoleteProperties();
         opt.CustomSchemaIds(type => type.FullName);
+
+        var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+        var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+        opt.IncludeXmlComments(xmlPath);
     });
 });
 
