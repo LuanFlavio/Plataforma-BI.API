@@ -43,7 +43,7 @@ namespace PlataformaBI.API.Controllers
         }
         
         /// <summary>
-        /// Retorna os dados do empresas conforme o CNPJ do mesmo
+        /// Retorna os dados da empresa conforme o CNPJ do mesmo
         /// </summary>
         [HttpGet("{CNPJ}")]
         public IActionResult Get(string CNPJ)
@@ -51,14 +51,33 @@ namespace PlataformaBI.API.Controllers
             if (!UserAuthenticated)
                 return Unauthorized();
 
-            Empresas empresas = _context.empresas.FirstOrDefault(p => p.CNPJ.Equals(Format.GetCNPJ(CNPJ)));
+            Empresas empresa = _context.empresas.FirstOrDefault(p => p.CNPJ.Equals(Format.GetCNPJ(CNPJ)));
 
-            if (empresas == null)
+            if (empresa == null)
             {
                 return NoContent();
             }
 
-            return Ok(empresas);
+            return Ok(empresa);
+        }
+
+        /// <summary>
+        /// Retorna os dados da empresa do usuário autenticado
+        /// </summary>
+        [HttpGet("Privada")]
+        public IActionResult GetEmpresaPrivada()
+        {
+            if (!UserAuthenticated)
+                return Unauthorized();
+
+            Empresas empresa = _context.empresas.FirstOrDefault(p => p.ID.Equals(Session.usuarioLogado.Empresa)) ?? new Empresas();
+
+            if (empresa == null || empresa.CNPJ == null)
+            {
+                return NoContent();
+            }
+
+            return Ok(empresa);
         }
     }
 }
