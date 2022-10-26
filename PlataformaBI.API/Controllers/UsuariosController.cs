@@ -68,7 +68,7 @@ namespace PlataformaBI.API.Controllers
         }
 
         /// <summary>
-        /// Altera o usuário cujo ID for passado
+        /// Altera o usuário cujo ID for passado (não pode alterar o email)
         /// </summary>
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] Usuarios value)
