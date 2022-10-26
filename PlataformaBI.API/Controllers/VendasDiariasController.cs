@@ -3,6 +3,7 @@ using Domain;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using PlataformaBI.API.Services;
+using PlataformaBI.API.Utils;
 using System.Collections.Concurrent;
 
 namespace PlataformaBI.API.Controllers
@@ -42,6 +43,8 @@ namespace PlataformaBI.API.Controllers
             {
                 return NoContent();
             }
+
+            Response.AddPagination(vendasDiarias.CurrentPage, vendasDiarias.PageSize, vendasDiarias.TotalCount, vendasDiarias.TatalPages);
 
             return Ok(vendasDiarias);
         }

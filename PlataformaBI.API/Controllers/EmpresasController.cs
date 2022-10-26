@@ -27,18 +27,22 @@ namespace PlataformaBI.API.Controllers
         /// Retorna todos dados de todas empresas
         /// </summary>
         [HttpGet]
-        public IActionResult Get()
+        public IActionResult Get([FromQuery]PageParams<string> pageParams)
         {
             if (!UserAuthenticated)
                 return Unauthorized();
 
-            IEnumerable<Empresas> empresas = _context.empresas.ToArray();
+            IEnumerable<Empresas> query = _context.empresas.ToArray();
 
-            if (empresas == null)
+            if (query == null)
             {
                 return NoContent();
             }
 
+            var empresas = PageList<Empresas>.CreateAsync(query, pageParams.PageNumber, pageParams.PageSize);
+
+            Response.AddPagination(empresas.CurrentPage, empresas.PageSize, empresas.TotalCount, empresas.TatalPages);
+            
             return Ok(empresas);
         }
         

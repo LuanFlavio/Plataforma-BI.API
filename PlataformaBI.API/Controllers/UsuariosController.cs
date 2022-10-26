@@ -34,7 +34,6 @@ namespace PlataformaBI.API.Controllers
 
             Usuarios usuario = this.Session.usuarioLogado;
             //Usuarios usuario = _context.usuarios.FirstOrDefault();
-            //Usuarios usuario = _context.usuarios.FirstOrDefault(p => p.);
 
             usuario.Senha = "";
 
@@ -44,6 +43,33 @@ namespace PlataformaBI.API.Controllers
             }
 
             return Ok(usuario);
+        }
+
+        /// <summary>
+        /// Retorna os dados de todos usuários (disponível apenas para admin)
+        /// </summary>
+        [HttpGet("Todos")]
+        public IActionResult GetAll()
+        {
+            if (!UserAuthenticated)
+                return Unauthorized();
+
+            if (Session.usuarioLogado.Perfil != "admin")
+                return Unauthorized();
+
+            Usuarios[] usuarios = _context.usuarios.Where(x => x.Empresa == Session.usuarioLogado.Empresa).ToArray();
+
+            if (usuarios == null)
+            {
+                return NoContent();
+            }
+
+            foreach(Usuarios usuario in usuarios)
+            {
+                usuario.Senha = "";
+            }
+
+            return Ok(usuarios);
         }
 
         /// <summary>
