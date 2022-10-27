@@ -9,4 +9,13 @@ namespace Domain
         public DateTime? Data { get; set; }
         public int? SemanaDoAno { get; set; }
     }
+
+    public class VendasDiariasParam
+    {
+        public int? ID { get; set; }
+        public DateTime? Data { get; set; }
+        public int? SemanaDoAno { get; set; }
+        public int? MesDoAno { get; set; }
+        public int? Ano { get; set; }
+    }
 }

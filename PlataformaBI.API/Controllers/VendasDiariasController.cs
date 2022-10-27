@@ -27,15 +27,10 @@ namespace PlataformaBI.API.Controllers
         /// Retorna os dados do vendasDiarias conforme o CNPJ da empresa
         /// </summary>
         [HttpGet]
-        public IActionResult Get([FromQuery] PageParams<VendasDiarias> pageParams)
+        public IActionResult Get([FromQuery] PageParams<VendasDiariasParam> pageParams)
         {
             if(!UserAuthenticated)
                 return Unauthorized();
-
-            if (pageParams.Termo == null || pageParams.Termo.Empresa == 0)
-            {
-                return BadRequest("MissingParams");
-            }
 
             var vendasDiarias = BuscarVendas(pageParams);
 
@@ -50,21 +45,34 @@ namespace PlataformaBI.API.Controllers
         }
 
         [NonAction]
-        public PageList<VendasDiarias> BuscarVendas(PageParams<VendasDiarias> pageParams)
+        public PageList<VendasDiarias> BuscarVendas(PageParams<VendasDiariasParam> pageParams)
         {
+            IEnumerable<VendasDiarias> vendasDiarias;
 
-            if(pageParams.Termo.Data == null)
+            if (pageParams.Termo != null)
             {
-                pageParams.Termo.Data = DateTime.Today.AddDays(-1);
+                //DATA FINAL = DateTime.Today.AddDays(-1);
+                //DATA FINAL = DateTime.Today.AddDays(-1);
+
+                vendasDiarias = _context
+                    .vendasDiarias
+                    .Where(p =>
+                        (p.Empresa.Equals(Session.usuarioLogado.Empresa)) &&
+                        (pageParams.Termo.Ano != null ? p.Ano.Equals(pageParams.Termo.Ano) : true) &&
+                        (pageParams.Termo.MesDoAno != null ? p.MesDoAno.Equals(pageParams.Termo.MesDoAno) : true) &&
+                        (pageParams.Termo.SemanaDoAno != null ? p.SemanaDoAno.Equals(pageParams.Termo.SemanaDoAno) : true) &&
+                        (pageParams.Termo.Data != null ? p.Data.Equals(pageParams.Termo.Data) : true) &&
+                        (pageParams.Termo.ID != null ? p.ID.Equals(pageParams.Termo.ID) : true)
+                    )
+                    .ToArray();
             }
-
-            //DATA FINAL = DateTime.Today.AddDays(-1);
-            //DATA FINAL = DateTime.Today.AddDays(-1);
-
-            IEnumerable<VendasDiarias> vendasDiarias = _context
-                                        .vendasDiarias
-                                        .Where(p => p.Empresa.Equals(pageParams.Termo.Empresa) && p.Data.Equals(pageParams.Termo.Data))
-                                        .ToArray();
+            else
+            {
+                vendasDiarias = _context
+                        .vendasDiarias
+                        .Where(p => p.Empresa.Equals(Session.usuarioLogado.Empresa))
+                        .ToArray();
+            }
 
             return PageList<VendasDiarias>.CreateAsync(vendasDiarias, pageParams.PageNumber, pageParams.PageSize);
         }
