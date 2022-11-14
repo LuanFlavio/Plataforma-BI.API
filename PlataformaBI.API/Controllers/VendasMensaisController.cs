@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using PlataformaBI.API.Services;
 using PlataformaBI.API.Utils;
 using System.Collections.Concurrent;
+using System.Linq;
 
 namespace PlataformaBI.API.Controllers
 {
@@ -32,12 +33,20 @@ namespace PlataformaBI.API.Controllers
             if (!UserAuthenticated)
                 return Unauthorized();
 
-            var vendasMensais = BuscarVendas(pageParams);
+            var result = BuscarVendas(pageParams);
 
-            if (vendasMensais == null)
+            if (result.resultado == null & result.mensagem == null)
             {
                 return NoContent();
             }
+            if(result.resultado == null)
+            {
+                return BadRequest(result.mensagem);
+            }
+
+            var vendasMensais = result.resultado;
+
+            
 
             Response.AddPagination(vendasMensais.CurrentPage, vendasMensais.PageSize, vendasMensais.TotalCount, vendasMensais.TatalPages);
 
@@ -45,24 +54,74 @@ namespace PlataformaBI.API.Controllers
         }
 
         [NonAction]
-        public PageList<VendasMensais> BuscarVendas(PageParams<VendasMensaisParam> pageParams)
+        public Result<PageList<VendasMensais>> BuscarVendas(PageParams<VendasMensaisParam> pageParams)
         {
+            Result<PageList<VendasMensais>> result = new()
+            {
+                resultado = null,
+                mensagem = null
+            };
+
+            var isRange = false;
+
             IEnumerable<VendasMensais> vendasMensais;
 
             if (pageParams.Termo != null)
             {
-                //DATA FINAL = DateTime.Today.AddDays(-1);
-                //DATA FINAL = DateTime.Today.AddDays(-1);
+                if (pageParams.Termo.DataInicial == null & pageParams.Termo.DataFinal != null)
+                {
+                    pageParams.Termo.DataInicial = pageParams.Termo.DataFinal;
+                }
+                if (pageParams.Termo.DataInicial != null & pageParams.Termo.DataFinal == null)
+                {
+                    pageParams.Termo.DataFinal = pageParams.Termo.DataInicial;
+                }
 
-                vendasMensais = _context
-                    .vendasMensal
-                    .Where(p =>
-                        (p.Empresa.Equals(Session.usuarioLogado.Empresa)) &&
-                        (pageParams.Termo.Ano != null ? p.Ano.Equals(pageParams.Termo.Ano) : true) &&
-                        (pageParams.Termo.MesDoAno != null ? p.MesDoAno.Equals(pageParams.Termo.MesDoAno) : true) &&
-                        (pageParams.Termo.ID != null ? p.ID.Equals(pageParams.Termo.ID) : true)
-                    )
-                    .ToArray();
+                if(pageParams.Termo.DataInicial != pageParams.Termo.DataFinal)
+                {
+                    isRange = true;
+                }
+
+                if (isRange)
+                {
+                    vendasMensais = _context
+                        .vendasMensal.AsEnumerable()
+                        .Where(p =>
+                            (p.Empresa.Equals(Session.usuarioLogado.Empresa)) &
+                            (pageParams.Termo.Ano != null ? p.Ano.Equals(pageParams.Termo.Ano) : true) &
+                            (pageParams.Termo.DataInicial != null ? 
+                                (
+                                    (
+                                        new DateTime(
+                                            p.Ano ?? 1,
+                                            p.MesDoAno ?? 1,
+                                            1
+                                         ) >= pageParams.Termo.DataInicial
+                                     ) &
+                                    (
+                                        new DateTime(
+                                            p.Ano ?? 1,
+                                            p.MesDoAno ?? 1,
+                                            1
+                                        )
+                                    ) <= pageParams.Termo.DataFinal
+                                 )
+                            : true) &
+                            (pageParams.Termo.ID != null ? p.ID.Equals(pageParams.Termo.ID) : true)
+                        )
+                        .ToArray();
+                } else
+                {
+                    vendasMensais = _context
+                        .vendasMensal
+                        .Where(p =>
+                            (p.Empresa.Equals(Session.usuarioLogado.Empresa)) &
+                            (pageParams.Termo.Ano != null ? p.Ano.Equals(pageParams.Termo.Ano) : true) &
+                            (pageParams.Termo.Mes != null ? (p.MesDoAno.Equals(pageParams.Termo.Mes)) : true) &
+                            (pageParams.Termo.ID != null ? p.ID.Equals(pageParams.Termo.ID) : true)
+                        )
+                        .ToArray();
+                }
             }
             else
             {
@@ -72,7 +131,9 @@ namespace PlataformaBI.API.Controllers
                         .ToArray();
             }
 
-            return PageList<VendasMensais>.CreateAsync(vendasMensais, pageParams.PageNumber, pageParams.PageSize);
+            result.resultado = PageList<VendasMensais>.CreateAsync(vendasMensais, pageParams.PageNumber, pageParams.PageSize);
+
+            return result;
         }
     }
 }

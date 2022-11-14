@@ -54,6 +54,15 @@ namespace PlataformaBI.API.Controllers
                 //DATA FINAL = DateTime.Today.AddDays(-1);
                 //DATA FINAL = DateTime.Today.AddDays(-1);
 
+                if(pageParams.Termo.DataInicial == null & pageParams.Termo.DataFinal != null)
+                {
+                    pageParams.Termo.DataInicial = pageParams.Termo.DataFinal;
+                }
+                if(pageParams.Termo.DataInicial != null & pageParams.Termo.DataFinal == null)
+                {
+                    pageParams.Termo.DataFinal = pageParams.Termo.DataInicial;
+                }
+
                 vendasDiarias = _context
                     .vendasDiarias
                     .Where(p =>
@@ -61,7 +70,7 @@ namespace PlataformaBI.API.Controllers
                         (pageParams.Termo.Ano != null ? p.Ano.Equals(pageParams.Termo.Ano) : true) &&
                         (pageParams.Termo.MesDoAno != null ? p.MesDoAno.Equals(pageParams.Termo.MesDoAno) : true) &&
                         (pageParams.Termo.SemanaDoAno != null ? p.SemanaDoAno.Equals(pageParams.Termo.SemanaDoAno) : true) &&
-                        (pageParams.Termo.Data != null ? p.Data.Equals(pageParams.Termo.Data) : true) &&
+                        (pageParams.Termo.DataInicial != null ? (p.Data >= pageParams.Termo.DataInicial && p.Data <= pageParams.Termo.DataFinal) : true) &&
                         (pageParams.Termo.ID != null ? p.ID.Equals(pageParams.Termo.ID) : true)
                     )
                     .ToArray();
