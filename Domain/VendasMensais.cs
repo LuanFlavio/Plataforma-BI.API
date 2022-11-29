@@ -15,5 +15,6 @@ namespace Domain
         public DateTime? DataInicial { get; set; }
         public DateTime? DataFinal { get; set; }
         public int? Ano { get; set; }
+        public bool? OrdemCrescente { get; set; }
     }
 }

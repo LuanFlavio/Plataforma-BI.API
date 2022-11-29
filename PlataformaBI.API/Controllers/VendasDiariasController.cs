@@ -48,6 +48,7 @@ namespace PlataformaBI.API.Controllers
         public PageList<VendasDiarias> BuscarVendas(PageParams<VendasDiariasParam> pageParams)
         {
             IEnumerable<VendasDiarias> vendasDiarias;
+            IEnumerable<VendasDiarias> a;
 
             if (pageParams.Termo != null)
             {
@@ -72,18 +73,26 @@ namespace PlataformaBI.API.Controllers
                         (pageParams.Termo.SemanaDoAno != null ? p.SemanaDoAno.Equals(pageParams.Termo.SemanaDoAno) : true) &&
                         (pageParams.Termo.DataInicial != null ? (p.Data >= pageParams.Termo.DataInicial && p.Data <= pageParams.Termo.DataFinal) : true) &&
                         (pageParams.Termo.ID != null ? p.ID.Equals(pageParams.Termo.ID) : true)
-                    )
-                    .ToArray();
+                    );
+
+                if (pageParams.Termo.OrdemCrescente == false)
+                {
+                    a = vendasDiarias.OrderByDescending(p => p.ID).ToArray();
+                }
+                else
+                {
+                    a = vendasDiarias.OrderBy(p => p.ID).ToArray();
+                }
             }
             else
             {
-                vendasDiarias = _context
+                a = vendasDiarias = _context
                         .vendasDiarias
                         .Where(p => p.Empresa.Equals(Session.usuarioLogado.Empresa))
                         .ToArray();
             }
 
-            return PageList<VendasDiarias>.CreateAsync(vendasDiarias, pageParams.PageNumber, pageParams.PageSize);
+            return PageList<VendasDiarias>.CreateAsync(a, pageParams.PageNumber, pageParams.PageSize);
         }
     }
 }

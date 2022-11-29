@@ -108,9 +108,10 @@ namespace PlataformaBI.API.Controllers
                                  )
                             : true) &
                             (pageParams.Termo.ID != null ? p.ID.Equals(pageParams.Termo.ID) : true)
-                        )
+                        ).OrderBy(p => true ? p.ID : p.ID)
                         .ToArray();
-                } else
+                }
+                else
                 {
                     vendasMensais = _context
                         .vendasMensal
@@ -119,8 +120,16 @@ namespace PlataformaBI.API.Controllers
                             (pageParams.Termo.Ano != null ? p.Ano.Equals(pageParams.Termo.Ano) : true) &
                             (pageParams.Termo.Mes != null ? (p.MesDoAno.Equals(pageParams.Termo.Mes)) : true) &
                             (pageParams.Termo.ID != null ? p.ID.Equals(pageParams.Termo.ID) : true)
-                        )
-                        .ToArray();
+                        );
+                }
+
+                if (pageParams.Termo.OrdemCrescente == false)
+                {
+                    vendasMensais.OrderByDescending(p => p.ID).ToArray();
+                }
+                else
+                {
+                    vendasMensais.OrderBy(p => p.ID).ToArray();
                 }
             }
             else

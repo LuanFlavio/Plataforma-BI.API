@@ -18,5 +18,6 @@ namespace Domain
         public int? SemanaDoAno { get; set; }
         public int? MesDoAno { get; set; }
         public int? Ano { get; set; }
+        public bool? OrdemCrescente { get; set; }
     }
 }
