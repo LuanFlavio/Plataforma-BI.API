@@ -12,7 +12,9 @@ namespace Domain
         public string? Email { get; set; }
         public string? Senha { get; set; }
         public string? Perfil { get; set; }
+        public string? Contato { get; set; }
         public int Empresa { get; set; } //Pode ser inserido o obj da empresa
+        public bool Ativo { get; set; } = true;
     }
     
     public class UsuariosLogin
