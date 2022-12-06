@@ -32,8 +32,8 @@ namespace PlataformaBI.API.Controllers
             if (!UserAuthenticated)
                 return Unauthorized();
 
-            Usuarios usuario = this.Session.usuarioLogado;
-            //Usuarios usuario = _context.usuarios.FirstOrDefault();
+            //Usuarios usuario = this.Session.usuarioLogado;   não estava funcionando pq guardava em cache as infos antigas quando o user era alterado
+            Usuarios usuario = _context.usuarios.FirstOrDefault();
 
             usuario.Senha = "";
 
@@ -214,11 +214,13 @@ namespace PlataformaBI.API.Controllers
             if (!await this.ExistsAsync(value))
                 return new Usuarios();
 
-            var entityEntry = this._context.Update(value);
+            var entityEntry = _context.Update(value);
 
-            await this._context.SaveChangesAsync();
+            _context.Entry(value).Property(x => x.Senha).IsModified = false;
 
-            this._context.ChangeTracker.Clear();
+            await _context.SaveChangesAsync();
+
+            _context.ChangeTracker.Clear();
 
             return entityEntry.Entity;
         }
