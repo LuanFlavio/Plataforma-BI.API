@@ -11,7 +11,7 @@ namespace DataAccess
         public DbSet<Usuarios> usuarios { get; set; }
         public DbSet<Metas> metas { get; set; }
         public DbSet<VendasDiarias> vendasDiarias { get; set; }
-        public DbSet<VendasMensais> vendasMensal { get; set; }
+        public DbSet<VendasMensal> vendasMensal { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -20,7 +20,7 @@ namespace DataAccess
         protected override void OnConfiguring(DbContextOptionsBuilder builder)
         {
             //GSOFT-GGRAPHS
-            builder.UseSqlServer(@"Server=servidor\sql2019;User Id=ggraphs;password=ggraphs2022;Database=GGRAPHS");
+            builder.UseSqlServer(/*connection string*/);
             base.OnConfiguring(builder);
         }
     }
