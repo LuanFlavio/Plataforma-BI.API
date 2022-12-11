@@ -11,7 +11,7 @@ namespace DataAccess
         public DbSet<Usuarios> usuarios { get; set; }
         public DbSet<Metas> metas { get; set; }
         public DbSet<VendasDiarias> vendasDiarias { get; set; }
-        public DbSet<VendasMensal> vendasMensal { get; set; }
+        public DbSet<VendasMensais> vendasMensal { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

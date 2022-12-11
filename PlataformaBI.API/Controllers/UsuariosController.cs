@@ -32,8 +32,8 @@ namespace PlataformaBI.API.Controllers
             if (!UserAuthenticated)
                 return Unauthorized();
 
-            Usuarios usuario = this.Session.usuarioLogado;
-            //Usuarios usuario = _context.usuarios.FirstOrDefault();
+            //Usuarios usuario = this.Session.usuarioLogado;
+            Usuarios usuario = _context.usuarios.FirstOrDefault(user => user.ID == Session.usuarioLogado.ID);
 
             usuario.Senha = "";
 
@@ -99,7 +99,7 @@ namespace PlataformaBI.API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] Usuarios value)
         {
-            if (!this.UserAuthenticated)
+            if (!UserAuthenticated)
                 return Unauthorized();
 
             if (id != value.ID)
@@ -148,7 +148,7 @@ namespace PlataformaBI.API.Controllers
             if (usuarioLogado == null)
                 return BadRequest();
 
-            var sessionExists = this.sessions.Values.FirstOrDefault(x => x.usuarioLogado.ID == usuarioLogado.ID);
+            var sessionExists = sessions.Values.FirstOrDefault(x => x.usuarioLogado.ID == usuarioLogado.ID);
 
             if (sessionExists is null)
             {
@@ -184,26 +184,26 @@ namespace PlataformaBI.API.Controllers
         [NonAction]
         public async Task<bool> ExistsAsync(Usuarios value)
         {
-            return await this._context.usuarios.AnyAsync(x => x.ID == value.ID && x.Email.ToLower() == value.Email.ToLower());
+            return await _context.usuarios.AnyAsync(x => x.ID == value.ID && x.Email.ToLower() == value.Email.ToLower());
         }
 
         [NonAction]
         public async Task<bool> ExistsAsync(string email)
         {
-            return await this._context.usuarios.AnyAsync(x => x.Email.ToLower() == email.ToLower());
+            return await _context.usuarios.AnyAsync(x => x.Email.ToLower() == email.ToLower());
         }
 
         [NonAction]
         public async Task<Usuarios> InsertAsync(Usuarios value)
         {
-            if (await this.ExistsAsync(value.Email))
+            if (await ExistsAsync(value.Email))
                 return new Usuarios();
 
-            var entityEntry = await this._context.usuarios.AddAsync(value);
+            var entityEntry = await _context.usuarios.AddAsync(value);
 
-            await this._context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
 
-            this._context.ChangeTracker.Clear();
+            _context.ChangeTracker.Clear();
 
             return entityEntry.Entity;
         }
@@ -211,14 +211,16 @@ namespace PlataformaBI.API.Controllers
         [NonAction]
         public async Task<Usuarios> UpdateAsync(Usuarios value)
         {
-            if (!await this.ExistsAsync(value))
+            if (!await ExistsAsync(value))
                 return new Usuarios();
 
-            var entityEntry = this._context.Update(value);
+            var entityEntry = _context.Update(value);
 
-            await this._context.SaveChangesAsync();
+            _context.Entry(value).Property(x => x.Senha).IsModified = false;
 
-            this._context.ChangeTracker.Clear();
+            await _context.SaveChangesAsync();
+
+            _context.ChangeTracker.Clear();
 
             return entityEntry.Entity;
         }
@@ -226,16 +228,16 @@ namespace PlataformaBI.API.Controllers
         [NonAction]
         public async Task<bool> DeleteAsync(int value)
         {
-            Usuarios usuario = this._context.usuarios.FirstOrDefault(x => x.ID == value);
+            Usuarios usuario = _context.usuarios.FirstOrDefault(x => x.ID == value);
 
             if (usuario is null)
                 return false;
 
-            this._context.usuarios.Remove(usuario);
+            _context.usuarios.Remove(usuario);
 
             await this._context.SaveChangesAsync();
 
-            this._context.ChangeTracker.Clear();
+            _context.ChangeTracker.Clear();
 
             return true;
         }
