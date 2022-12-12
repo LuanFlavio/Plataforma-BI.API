@@ -65,6 +65,7 @@ namespace PlataformaBI.API.Controllers
             var isRange = false;
 
             IEnumerable<VendasMensais> vendasMensais;
+            IEnumerable<VendasMensais> a;
 
             if (pageParams.Termo != null)
             {
@@ -125,22 +126,22 @@ namespace PlataformaBI.API.Controllers
 
                 if (pageParams.Termo.OrdemCrescente == false)
                 {
-                    vendasMensais.OrderByDescending(p => p.ID).ToArray();
+                    a = vendasMensais.OrderByDescending(p => p.ID).ToArray();
                 }
                 else
                 {
-                    vendasMensais.OrderBy(p => p.ID).ToArray();
+                    a = vendasMensais.OrderBy(p => p.ID).ToArray();
                 }
             }
             else
             {
-                vendasMensais = _context
+                a = vendasMensais = _context
                         .vendasMensal
                         .Where(p => p.Empresa.Equals(Session.usuarioLogado.Empresa))
                         .ToArray();
             }
 
-            result.resultado = PageList<VendasMensais>.CreateAsync(vendasMensais, pageParams.PageNumber, pageParams.PageSize);
+            result.resultado = PageList<VendasMensais>.CreateAsync(a, pageParams.PageNumber, pageParams.PageSize);
 
             return result;
         }
